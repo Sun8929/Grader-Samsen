@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import http from 'http'
-import rateLimit from 'express-rate-limit'
+import { rateLimit } from 'express-rate-limit'
 import compression from 'compression'
 import { loadEnv } from './env.js'
 import { authRouter } from './routes/auth.js'
