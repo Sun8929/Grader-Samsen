@@ -104,4 +104,8 @@ const startServer = (currentPort: number) => {
   })
 }
 
-startServer(port)
+if (!process.env.VERCEL) {
+  startServer(port)
+}
+
+export default app
