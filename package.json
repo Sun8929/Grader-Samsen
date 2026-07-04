@@ -2,6 +2,9 @@
   "name": "grader-samsen",
   "private": true,
   "version": "0.0.0",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix front-end\" \"npm run dev --prefix backend\"",
     "dev:front": "npm run dev --prefix front-end",
