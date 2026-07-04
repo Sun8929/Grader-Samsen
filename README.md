@@ -1,3 +1,5 @@
+[Live Demo — Frontend only](https://Sun8929.github.io/Grader-Samsen)
+
 <div align="center">
   <img src="front-end/src/assets/samsen-logo.png" alt="Samsen Wittayalai School Logo" width="120" style="border-radius: 24px;" />
 
@@ -44,7 +46,7 @@ Grader-Samsen/
 * ⏱️ **Live Clock & Dashboard Roadmaps:** Home screen displays a ticking local date/time capsule and highlights the platform release roadmap (July Beta, August Public, September School).
 * 👤 **Avatar Picture File Uploader:** Upload, crop, and configure your own avatar picture in Settings, updating both headers and profile cards instantly.
 * 📈 **Leaderboard Previews & Git Timelines:** Displays live top-10 student standings and a text-only, non-interactive real-time GitHub repository commit log feed.
-* 🛣️ **8-Tier XP Roadmap Modal:** Clicking the header rank badge launches a vertical timeline connecting 8 competitive tiers (Bronze, Silver, Gold, Platinum, Diamond, Master, Grandmaster, Challenger) with real-time progress details.
+* 🛣️ **8-Tier XP Roadmap Modal:** Clicking the header rank badge launches a vertical timeline connecting 8 competitive tiers (Bronze, Silver, Gold, Platinum, Diamond, Master, Grandmaster, Cha[...]
 * 🏫 **Classroom Administration:** Join classrooms using unique codes, manage homework assignments, broadcast announcements, and check class rosters.
 * 🏆 **Animated Cascadings & Toggles:** Cascading spring verdict badges for testcases, loading spinners, and layout animations that can be globally toggled on or off in Settings.
 
