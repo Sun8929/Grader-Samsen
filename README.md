@@ -1,5 +1,3 @@
-[Our WEBSITE]([https://Sun8929.github.io/Grader-Samsen](https://front-end-lake-theta.vercel.app/app))
-
 <div align="center">
   <img src="front-end/src/assets/samsen-logo.png" alt="Samsen Wittayalai School Logo" width="120" style="border-radius: 24px;" />
 
