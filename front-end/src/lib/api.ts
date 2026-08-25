@@ -1,6 +1,6 @@
 import type { User, Classroom, Problem, Submission, Assignment } from '@/types'
 
-const API_URL = import.meta.env.VITE_API_URL ?? ''
+const API_URL = 'https://backend-six-henna-37.vercel.app'
 
 export interface AuthSession {
   access_token: string
@@ -48,18 +48,24 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers.Authorization = `Bearer ${session.access_token}`
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers,
-  })
+  try {
+    const response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+    })
 
-  const data = (await response.json()) as T & ApiError
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({ error: 'Invalid JSON response' })) as ApiError
+      throw new Error(data.error ?? `Request failed with status ${response.status}`)
+    }
 
-  if (!response.ok) {
-    throw new Error(data.error ?? 'Request failed')
+    return (await response.json()) as T
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(`Network error: Failed to connect to server at ${API_URL}. Please check your internet connection or server status.`)
+    }
+    throw error
   }
-
-  return data
 }
 
 export async function register(
