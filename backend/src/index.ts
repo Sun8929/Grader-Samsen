@@ -49,7 +49,9 @@ app.use(
       }
 
       const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)
-      if (isLocalhost || origin === frontendUrl) {
+      const isVercel = origin.endsWith('.vercel.app')
+      const isCustomDomain = origin === 'https://gradersamsen.samsenwit.ac.th'
+      if (isLocalhost || isVercel || isCustomDomain || origin === frontendUrl) {
         callback(null, true)
         return
       }
@@ -66,10 +68,10 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
 })
 
-app.use('/api/auth', authRouter)
-app.use('/api/classrooms', classroomsRouter)
-app.use('/api/problems', problemsRouter)
-app.use('/api/assignments', assignmentsRouter)
+app.use('/auth', authRouter)
+app.use('/classrooms', classroomsRouter)
+app.use('/problems', problemsRouter)
+app.use('/assignments', assignmentsRouter)
 
 // Fallback to JSON for 404
 app.use((req, res) => {

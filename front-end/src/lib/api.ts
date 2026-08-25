@@ -74,7 +74,7 @@ export async function register(
   role?: string,
   teacherCode?: string,
 ): Promise<AuthResponse> {
-  const data = await request<AuthResponse>('/api/auth/register', {
+  const data = await request<AuthResponse>('/auth/register', {
     method: 'POST',
     body: JSON.stringify({ username, password, role, teacherCode }),
   })
@@ -87,7 +87,7 @@ export async function register(
 }
 
 export async function login(username: string, password: string): Promise<AuthResponse> {
-  const data = await request<AuthResponse>('/api/auth/login', {
+  const data = await request<AuthResponse>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ username, password }),
   })
@@ -101,7 +101,7 @@ export async function login(username: string, password: string): Promise<AuthRes
 
 export async function logout(): Promise<void> {
   try {
-    await request<{ success: boolean }>('/api/auth/logout', { method: 'POST' })
+    await request<{ success: boolean }>('/auth/logout', { method: 'POST' })
   } finally {
     setStoredSession(null)
   }
@@ -112,7 +112,7 @@ export async function fetchCurrentUser(): Promise<User | null> {
   if (!session?.access_token) return null
 
   try {
-    const data = await request<{ user: User }>('/api/auth/me')
+    const data = await request<{ user: User }>('/auth/me')
     return data.user
   } catch {
     setStoredSession(null)
@@ -121,13 +121,13 @@ export async function fetchCurrentUser(): Promise<User | null> {
 }
 
 export async function fetchUsers(): Promise<User[]> {
-  const data = await request<{ users: User[] }>('/api/auth/users')
+  const data = await request<{ users: User[] }>('/auth/users')
   return data.users
 }
 
 export async function deleteAccount(): Promise<void> {
   try {
-    await request<{ success: boolean }>('/api/auth/delete-account', {
+    await request<{ success: boolean }>('/auth/delete-account', {
       method: 'DELETE',
     })
   } finally {
@@ -136,13 +136,13 @@ export async function deleteAccount(): Promise<void> {
 }
 
 export async function deleteUser(id: string): Promise<void> {
-  await request<{ success: boolean }>(`/api/auth/users/${id}`, {
+  await request<{ success: boolean }>(`/auth/users/${id}`, {
     method: 'DELETE',
   })
 }
 
 export async function updateUserRole(id: string, role: string): Promise<User> {
-  const data = await request<{ user: User }>(`/api/auth/users/${id}/role`, {
+  const data = await request<{ user: User }>(`/auth/users/${id}/role`, {
     method: 'PUT',
     body: JSON.stringify({ role }),
   })
@@ -160,7 +160,7 @@ export interface ImportUserResult {
 export async function importUsers(
   users: Array<{ username?: string; name?: string; password?: string; role?: string }>
 ): Promise<ImportUserResult> {
-  return request<ImportUserResult>('/api/auth/import-users', {
+  return request<ImportUserResult>('/auth/import-users', {
     method: 'POST',
     body: JSON.stringify({ users }),
   })
@@ -169,12 +169,12 @@ export async function importUsers(
 
 
 export async function fetchClassrooms(): Promise<Classroom[]> {
-  const data = await request<{ classrooms: Classroom[] }>('/api/classrooms')
+  const data = await request<{ classrooms: Classroom[] }>('/classrooms')
   return data.classrooms
 }
 
 export async function createClassroom(name: string, description?: string): Promise<Classroom> {
-  const data = await request<{ classroom: Classroom }>('/api/classrooms', {
+  const data = await request<{ classroom: Classroom }>('/classrooms', {
     method: 'POST',
     body: JSON.stringify({ name, description }),
   })
@@ -182,7 +182,7 @@ export async function createClassroom(name: string, description?: string): Promi
 }
 
 export async function joinClassroomByCode(code: string): Promise<Classroom> {
-  const data = await request<{ classroom: Classroom }>('/api/classrooms/join', {
+  const data = await request<{ classroom: Classroom }>('/classrooms/join', {
     method: 'POST',
     body: JSON.stringify({ code }),
   })
@@ -190,19 +190,19 @@ export async function joinClassroomByCode(code: string): Promise<Classroom> {
 }
 
 export async function leaveClassroom(classId: string): Promise<void> {
-  await request<{ success: boolean }>(`/api/classrooms/${classId}/leave`, {
+  await request<{ success: boolean }>(`/classrooms/${classId}/leave`, {
     method: 'DELETE',
   })
 }
 
 export async function deleteClassroom(classId: string): Promise<void> {
-  await request<{ success: boolean }>(`/api/classrooms/${classId}`, {
+  await request<{ success: boolean }>(`/classrooms/${classId}`, {
     method: 'DELETE',
   })
 }
 
 export async function fetchClassroomMembers(classId: string): Promise<User[]> {
-  const data = await request<{ members: User[] }>(`/api/classrooms/${classId}/members`)
+  const data = await request<{ members: User[] }>(`/classrooms/${classId}/members`)
   return data.members
 }
 
@@ -218,22 +218,22 @@ export interface XPLeaderboardEntry {
 }
 
 export async function fetchLeaderboard(): Promise<XPLeaderboardEntry[]> {
-  const data = await request<{ leaderboard: XPLeaderboardEntry[] }>('/api/auth/leaderboard')
+  const data = await request<{ leaderboard: XPLeaderboardEntry[] }>('/auth/leaderboard')
   return data.leaderboard
 }
 
 export async function fetchProblems(): Promise<Problem[]> {
-  const data = await request<{ problems: Problem[] }>('/api/problems')
+  const data = await request<{ problems: Problem[] }>('/problems')
   return data.problems
 }
 
 export async function fetchProblemDetail(id: string): Promise<Problem> {
-  const data = await request<{ problem: Problem }>(`/api/problems/${id}`)
+  const data = await request<{ problem: Problem }>(`/problems/${id}`)
   return data.problem
 }
 
 export async function createProblem(problemData: Omit<Problem, 'id' | 'solvedCount'>): Promise<Problem> {
-  const data = await request<{ problem: Problem }>('/api/problems', {
+  const data = await request<{ problem: Problem }>('/problems', {
     method: 'POST',
     body: JSON.stringify(problemData),
   })
@@ -241,7 +241,7 @@ export async function createProblem(problemData: Omit<Problem, 'id' | 'solvedCou
 }
 
 export async function submitCodeSolution(problemId: string, language: string, code: string): Promise<Submission> {
-  const data = await request<{ submission: Submission }>(`/api/problems/${problemId}/submit`, {
+  const data = await request<{ submission: Submission }>(`/problems/${problemId}/submit`, {
     method: 'POST',
     body: JSON.stringify({ language, code }),
   })
@@ -249,12 +249,12 @@ export async function submitCodeSolution(problemId: string, language: string, co
 }
 
 export async function fetchSubmissions(): Promise<Submission[]> {
-  const data = await request<{ submissions: Submission[] }>('/api/problems/submissions/all')
+  const data = await request<{ submissions: Submission[] }>('/problems/submissions/all')
   return data.submissions
 }
 
 export async function deleteProblem(id: string): Promise<void> {
-  await request<{ success: boolean }>(`/api/problems/${id}`, {
+  await request<{ success: boolean }>(`/problems/${id}`, {
     method: 'DELETE',
   })
 }
@@ -264,7 +264,7 @@ export interface EditProblemData extends Omit<Problem, 'id' | 'solvedCount' | 'c
 }
 
 export async function updateProblem(id: string, problemData: EditProblemData): Promise<Problem> {
-  const data = await request<{ problem: Problem }>(`/api/problems/${id}`, {
+  const data = await request<{ problem: Problem }>(`/problems/${id}`, {
     method: 'PUT',
     body: JSON.stringify(problemData),
   })
@@ -272,12 +272,12 @@ export async function updateProblem(id: string, problemData: EditProblemData): P
 }
 
 export async function fetchProblemTestcases(id: string): Promise<Array<{ input: string; output: string; isPublic: boolean }>> {
-  const data = await request<{ testcases: Array<{ input: string; output: string; isPublic: boolean }> }>(`/api/problems/${id}/testcases`)
+  const data = await request<{ testcases: Array<{ input: string; output: string; isPublic: boolean }> }>(`/problems/${id}/testcases`)
   return data.testcases
 }
 
 export async function updateProfile(name?: string, username?: string): Promise<User> {
-  const data = await request<{ user: User }>('/api/auth/profile', {
+  const data = await request<{ user: User }>('/auth/profile', {
     method: 'PUT',
     body: JSON.stringify({ name, username }),
   })
@@ -285,7 +285,7 @@ export async function updateProfile(name?: string, username?: string): Promise<U
 }
 
 export async function updatePassword(password: string): Promise<{ success: boolean; message: string }> {
-  const data = await request<{ success: boolean; message: string }>('/api/auth/password', {
+  const data = await request<{ success: boolean; message: string }>('/auth/password', {
     method: 'PUT',
     body: JSON.stringify({ password }),
   })
@@ -293,7 +293,7 @@ export async function updatePassword(password: string): Promise<{ success: boole
 }
 
 export async function fetchClassroomAssignments(classId: string): Promise<Assignment[]> {
-  const data = await request<{ assignments: Assignment[] }>(`/api/assignments/classroom/${classId}`)
+  const data = await request<{ assignments: Assignment[] }>(`/assignments/classroom/${classId}`)
   return data.assignments
 }
 
@@ -304,7 +304,7 @@ export async function createAssignment(
   dueAt: string,
   problemIds: string[],
 ): Promise<Assignment> {
-  const data = await request<{ assignment: Assignment }>('/api/assignments', {
+  const data = await request<{ assignment: Assignment }>('/assignments', {
     method: 'POST',
     body: JSON.stringify({ classroomId, title, description, dueAt, problemIds }),
   })
@@ -312,18 +312,18 @@ export async function createAssignment(
 }
 
 export async function deleteAssignment(id: string): Promise<void> {
-  await request<{ success: boolean }>(`/api/assignments/${id}`, {
+  await request<{ success: boolean }>(`/assignments/${id}`, {
     method: 'DELETE',
   })
 }
 
 export async function fetchClassroomSubmissions(classId: string): Promise<Submission[]> {
-  const data = await request<{ submissions: Submission[] }>(`/api/classrooms/${classId}/submissions`)
+  const data = await request<{ submissions: Submission[] }>(`/classrooms/${classId}/submissions`)
   return data.submissions
 }
 
 export async function updateProfileAvatar(avatar: string): Promise<User> {
-  const data = await request<{ user: User }>('/api/auth/profile/avatar', {
+  const data = await request<{ user: User }>('/auth/profile/avatar', {
     method: 'PUT',
     body: JSON.stringify({ avatar }),
   })
@@ -331,7 +331,7 @@ export async function updateProfileAvatar(avatar: string): Promise<User> {
 }
 
 export async function resetProfileProgress(): Promise<User> {
-  const data = await request<{ user: User }>('/api/auth/profile/reset', {
+  const data = await request<{ user: User }>('/auth/profile/reset', {
     method: 'POST',
   })
   return data.user
@@ -344,6 +344,6 @@ export interface UserProfileDetails {
 }
 
 export async function fetchUserProfile(userId: string): Promise<UserProfileDetails> {
-  return request<UserProfileDetails>(`/api/auth/users/${userId}/profile`)
+  return request<UserProfileDetails>(`/auth/users/${userId}/profile`)
 }
 

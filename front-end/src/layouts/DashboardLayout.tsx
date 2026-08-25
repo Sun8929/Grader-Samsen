@@ -25,6 +25,8 @@ import {
   Flame,
   Swords,
   Check,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { BrandMark } from '@/components/BrandMark'
 import { cn } from '@/lib/utils'
@@ -71,9 +73,11 @@ const mobileTeacherNav = [
 function NavLink({
   item,
   active,
+  collapsed,
 }: {
   item: { nameKey: string; path: string; icon: any; end?: boolean }
   active: boolean
+  collapsed: boolean
 }) {
   const Icon = item.icon
   const { t } = useTranslation()
@@ -86,10 +90,20 @@ function NavLink({
           ? 'bg-accent text-accent-foreground'
           : 'text-muted-foreground hover:bg-muted hover:text-foreground',
       )}
+      title={collapsed ? t(item.nameKey) : ''}
     >
       {active && <span className="nav-active-indicator" aria-hidden />}
       <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary')} />
-      {t(item.nameKey)}
+      {!collapsed && (
+        <motion.span
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -10 }}
+          className="truncate"
+        >
+          {t(item.nameKey)}
+        </motion.span>
+      )}
     </Link>
   )
 }
@@ -99,16 +113,17 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
   const navigate = useNavigate()
   const { user, authReady, isDark, toggleDark, logout, animationsEnabled } = useAppStore()
   const [showRankDialog, setShowRankDialog] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const { t, language } = useTranslation()
   const isStudent = user?.role === 'student'
-  const navItems = admin 
-    ? teacherNav 
+  const navItems = admin
+    ? teacherNav
     : (!isStudent && user
         ? [{ nameKey: 'nav.adminPortal', path: '/admin', icon: LayoutDashboard }, ...studentNav]
         : studentNav)
 
-  const mobileNav = admin 
-    ? mobileTeacherNav 
+  const mobileNav = admin
+    ? mobileTeacherNav
     : (!isStudent && user
         ? [{ nameKey: 'nav.dashboard', path: '/admin', icon: LayoutDashboard }, ...mobileStudentNav.slice(0, 4)]
         : mobileStudentNav)
@@ -162,23 +177,37 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
       <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary/15 blur-[120px] pointer-events-none z-0" />
       <div className="fixed bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-[120px] pointer-events-none z-0" />
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-card shadow-sm lg:flex">
-        <div className="flex h-16 items-center border-b border-border px-5">
-          <Link to="/" className="rounded-lg outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
+      <motion.aside
+        initial={false}
+        animate={{ width: isCollapsed ? 80 : 240 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-border bg-card shadow-sm lg:flex"
+      >
+        <div className="flex h-16 items-center border-b border-border px-4">
+          <Link to="/" className="flex items-center justify-center rounded-lg outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
             <BrandMark />
           </Link>
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label={language === 'th' ? 'เมนูนำทางหลัก' : 'Main navigation'}>
           {navItems.map((item) => (
-            <NavLink key={item.path} item={item} active={isActive(item)} />
+            <NavLink key={item.path} item={item} active={isActive(item)} collapsed={isCollapsed} />
           ))}
         </nav>
         <div className="border-t border-border p-4">
-          <div className="mb-3 truncate rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">{user?.name ?? (language === 'th' ? 'ผู้เข้าชม' : 'Guest')}</span>
-            {user?.username && <span className="block truncate opacity-80">@{user.username}</span>}
-          </div>
-          <div className="flex gap-1 items-center">
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-3 truncate rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground overflow-hidden"
+              >
+                <span className="font-medium text-foreground">{user?.name ?? (language === 'th' ? 'ผู้เข้าชม' : 'Guest')}</span>
+                {user?.username && <span className="block truncate opacity-80">@{user.username}</span>}
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div className="flex gap-1 items-center justify-center">
             <LanguageSwitcher variant="ghost" />
             <Button variant="ghost" size="icon" onClick={toggleDark} aria-label={language === 'th' ? 'สลับธีม' : 'Toggle theme'}>
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -201,16 +230,24 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
             </Button>
           </div>
         </div>
-      </aside>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="m-2 rounded-full border border-border bg-background"
+        >
+          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </Button>
+      </motion.aside>
 
-      <div className="lg:pl-60">
+      <div className={cn("transition-all duration-300", isCollapsed ? "lg:pl-20" : "lg:pl-60")}>
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/80 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-card/70 sm:px-8">
           <Link to="/" className="lg:hidden">
             <BrandMark />
           </Link>
           <div className="ml-auto flex items-center gap-3">
             {isStudent && (
-              <button 
+              <button
                 onClick={() => setShowRankDialog(true)}
                 className={cn(
                   "hidden items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold sm:inline-flex border transition-all duration-300 hover:opacity-90 hover:scale-105 active:scale-95 cursor-pointer",
@@ -224,24 +261,23 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
                 </span>
               </button>
             )}
-            
-            {/* Settings button visible ONLY in portrait/mobile (lg:hidden) */}
+
             <Button variant="ghost" size="icon" asChild className="lg:hidden h-9 w-9">
               <Link to={`${base}/settings`} aria-label={t('nav.settings')}>
                 <Settings className="h-4 w-4" />
               </Link>
             </Button>
 
-            <Link 
+            <Link
               to={isStudent ? '/app/profile' : `${base}/settings`}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer overflow-hidden border border-border/10"
               aria-label={t('nav.profile')}
             >
               {user?.avatarUrl ? (
-                <img 
-                  src={user.avatarUrl} 
-                  alt={user.name} 
-                  className="h-full w-full object-cover" 
+                <img
+                  src={user.avatarUrl}
+                  alt={user.name}
+                  className="h-full w-full object-cover"
                 />
               ) : (
                 (user?.name ?? 'S').charAt(0).toUpperCase()
@@ -253,7 +289,7 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
         <motion.main
           key={location.pathname + '_' + language}
           initial={animationsEnabled ? { opacity: 0, y: 6 } : {}}
-          animate={animationsEnabled ? { opacity: 1, y: 0 } : {}}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: animationsEnabled ? 0.2 : 0, ease: [0.16, 1, 0.3, 1] }}
           className="mx-auto max-w-7xl p-6 pb-24 sm:p-8 lg:pb-10 lg:p-10"
         >
@@ -288,15 +324,13 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
       <AnimatePresence>
         {showRankDialog && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowRankDialog(false)}
               className="absolute inset-0 bg-background/80 backdrop-blur-sm"
             />
-            {/* Modal Body */}
             <motion.div
               initial={animationsEnabled ? { opacity: 0, scale: 0.95, y: 15 } : { opacity: 1, scale: 1, y: 0 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -309,7 +343,7 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
                   <Trophy className="h-5 w-5 text-primary" />
                   {language === 'th' ? 'Grader-Samsen Rank' : 'Grader-Samsen Rank'}
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowRankDialog(false)}
                   className="rounded-lg p-1 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                 >
@@ -317,38 +351,35 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
                 </button>
               </div>
 
-              {/* Roadmap Timeline */}
               <div className="relative pl-6 py-2 space-y-5 before:absolute before:left-[9px] before:top-2 before:bottom-2 before:w-[2px] before:bg-border/60">
                 {XP_RANKS.map((rank, index) => {
                   const isCurrent = currentRank.id === rank.id
                   const isAchieved = userXp >= rank.minXp
                   const Icon = rankIcons[rank.iconName as keyof typeof rankIcons] || Shield
-                  
+
                   return (
-                    <motion.div 
+                    <motion.div
                       key={rank.id}
                       initial={animationsEnabled ? { opacity: 0, x: -15 } : {}}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.04 }}
                       className="relative flex gap-4"
                     >
-                      {/* Connector dot indicator */}
                       <span className={cn(
                         "absolute -left-[22px] top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border bg-card transition-all z-10",
-                        isCurrent ? "border-primary ring-4 ring-primary/20 bg-primary" : 
+                        isCurrent ? "border-primary ring-4 ring-primary/20 bg-primary" :
                         isAchieved ? "border-primary bg-primary/70" : "border-muted-foreground/35 bg-card"
                       )}>
                         {isAchieved && !isCurrent && <Check className="h-2 w-2 text-white" />}
                       </span>
 
-                      {/* Rank Card */}
-                      <div 
+                      <div
                         className={cn(
                           "flex-1 p-3.5 rounded-xl border transition-all",
-                          isCurrent 
-                            ? "border-primary bg-primary/5 shadow-sm scale-[1.01]" 
-                            : isAchieved 
-                              ? "border-border bg-card/65 opacity-90" 
+                          isCurrent
+                            ? "border-primary bg-primary/5 shadow-sm scale-[1.01]"
+                            : isAchieved
+                              ? "border-border bg-card/65 opacity-90"
                               : "border-border/40 bg-card/30 opacity-50"
                         )}
                       >
@@ -371,7 +402,7 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
                                 )}
                               </p>
                               <p className="text-[11px] text-muted-foreground font-medium">
-                                {rank.maxXp 
+                                {rank.maxXp
                                   ? `${rank.minXp.toLocaleString()} - ${rank.maxXp.toLocaleString()} XP`
                                   : `${rank.minXp.toLocaleString()}+ XP`}
                               </p>
@@ -385,7 +416,6 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
                           )}
                         </div>
 
-                        {/* Current Rank Progress Bar details */}
                         {isCurrent && nextRank && (
                           <div className="mt-3.5 space-y-1.5 border-t border-dashed border-border/80 pt-2.5">
                             <div className="flex justify-between text-[10px] text-muted-foreground font-semibold">
@@ -393,7 +423,7 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
                               <span>{progressPercent.toFixed(0)}%</span>
                             </div>
                             <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                              <motion.div 
+                              <motion.div
                                 initial={animationsEnabled ? { width: 0 } : { width: `${progressPercent}%` }}
                                 animate={{ width: `${progressPercent}%` }}
                                 transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -401,8 +431,8 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
                               />
                             </div>
                             <p className="text-[10px] text-muted-foreground/80 font-medium">
-                              {language === 'th' 
-                                ? `ต้องการอีก ${(nextRank.minXp - userXp).toLocaleString()} XP เพื่อเลื่อนยศ` 
+                              {language === 'th'
+                                ? `ต้องการอีก ${(nextRank.minXp - userXp).toLocaleString()} XP เพื่อเลื่อนยศ`
                                 : `Need ${(nextRank.minXp - userXp).toLocaleString()} more XP to rank up`}
                             </p>
                           </div>
