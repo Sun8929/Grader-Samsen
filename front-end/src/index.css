@@ -26,7 +26,7 @@
   --color-border: rgba(226, 232, 240, 0.55);
   --color-input: rgba(226, 232, 240, 0.55);
   --color-primary: var(--primary);
-  --color-primary-foreground: #ffffff;
+  --color-primary-foreground: var(--primary-foreground, #ffffff);
   --color-secondary: rgba(241, 245, 249, 0.45);
   --color-secondary-foreground: #1e293b;
   --color-accent: var(--accent);
@@ -52,6 +52,7 @@
 
 :root {
   --primary: #10b981;
+  --primary-foreground: #ffffff;
   --primary-glow: rgba(16, 185, 129, 0.15);
   --accent-glow: rgba(52, 211, 153, 0.1);
   --accent: rgba(236, 253, 245, 0.5);
@@ -78,6 +79,7 @@
   
   /* Dark Mode Default Theme Color */
   --primary: #10b981;
+  --primary-foreground: #ffffff;
   --primary-glow: rgba(16, 185, 129, 0.25);
   --accent-glow: rgba(52, 211, 153, 0.2);
   --accent: rgba(20, 83, 45, 0.3);
@@ -89,6 +91,7 @@
 /* Color Grading Themes */
 .theme-emerald {
   --primary: #10b981;
+  --primary-foreground: #ffffff;
   --primary-glow: rgba(16, 185, 129, 0.15);
   --accent-glow: rgba(52, 211, 153, 0.1);
   --accent: rgba(236, 253, 245, 0.5);
@@ -98,6 +101,7 @@
 }
 .dark.theme-emerald {
   --primary: #34d399;
+  --primary-foreground: #09090b;
   --primary-glow: rgba(52, 211, 153, 0.25);
   --accent-glow: rgba(52, 211, 153, 0.2);
   --accent: rgba(20, 83, 45, 0.3);
@@ -108,6 +112,7 @@
 
 .theme-sapphire {
   --primary: #3b82f6;
+  --primary-foreground: #ffffff;
   --primary-glow: rgba(59, 130, 246, 0.15);
   --accent-glow: rgba(96, 165, 250, 0.1);
   --accent: rgba(239, 246, 255, 0.5);
@@ -117,6 +122,7 @@
 }
 .dark.theme-sapphire {
   --primary: #60a5fa;
+  --primary-foreground: #09090b;
   --primary-glow: rgba(96, 165, 250, 0.25);
   --accent-glow: rgba(96, 165, 250, 0.2);
   --accent: rgba(30, 58, 138, 0.3);
@@ -127,6 +133,7 @@
 
 .theme-amethyst {
   --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
   --primary-glow: rgba(139, 92, 246, 0.15);
   --accent-glow: rgba(167, 139, 250, 0.1);
   --accent: rgba(245, 243, 255, 0.5);
@@ -136,6 +143,7 @@
 }
 .dark.theme-amethyst {
   --primary: #a78bfa;
+  --primary-foreground: #09090b;
   --primary-glow: rgba(167, 139, 250, 0.25);
   --accent-glow: rgba(167, 139, 250, 0.2);
   --accent: rgba(88, 28, 135, 0.3);
@@ -146,6 +154,7 @@
 
 .theme-ruby {
   --primary: #ec4899;
+  --primary-foreground: #ffffff;
   --primary-glow: rgba(236, 72, 153, 0.15);
   --accent-glow: rgba(244, 114, 182, 0.1);
   --accent: rgba(253, 242, 248, 0.5);
@@ -155,6 +164,7 @@
 }
 .dark.theme-ruby {
   --primary: #f472b6;
+  --primary-foreground: #09090b;
   --primary-glow: rgba(244, 114, 182, 0.25);
   --accent-glow: rgba(244, 114, 182, 0.2);
   --accent: rgba(157, 23, 77, 0.3);
@@ -165,6 +175,7 @@
 
 .theme-amber {
   --primary: #f59e0b;
+  --primary-foreground: #09090b;
   --primary-glow: rgba(245, 158, 11, 0.15);
   --accent-glow: rgba(251, 191, 36, 0.1);
   --accent: rgba(254, 243, 199, 0.5);
@@ -174,12 +185,34 @@
 }
 .dark.theme-amber {
   --primary: #fbbf24;
+  --primary-foreground: #09090b;
   --primary-glow: rgba(251, 191, 36, 0.25);
   --accent-glow: rgba(251, 191, 36, 0.2);
   --accent: rgba(120, 53, 4, 0.3);
   --accent-foreground: #fde68a;
   --theme-glow-1: rgba(251, 191, 36, 0.15);
   --theme-glow-2: rgba(239, 68, 68, 0.12);
+}
+
+.theme-monochrome {
+  --primary: #18181b;
+  --primary-foreground: #ffffff;
+  --primary-glow: rgba(24, 24, 27, 0.18);
+  --accent-glow: rgba(82, 82, 91, 0.12);
+  --accent: rgba(24, 24, 27, 0.07);
+  --accent-foreground: #09090b;
+  --theme-glow-1: rgba(0, 0, 0, 0.06);
+  --theme-glow-2: rgba(100, 116, 139, 0.06);
+}
+.dark.theme-monochrome {
+  --primary: #f4f4f5;
+  --primary-foreground: #09090b;
+  --primary-glow: rgba(255, 255, 255, 0.25);
+  --accent-glow: rgba(255, 255, 255, 0.15);
+  --accent: rgba(255, 255, 255, 0.12);
+  --accent-foreground: #ffffff;
+  --theme-glow-1: rgba(255, 255, 255, 0.08);
+  --theme-glow-2: rgba(161, 161, 170, 0.08);
 }
 
 

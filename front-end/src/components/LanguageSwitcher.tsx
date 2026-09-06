@@ -1,8 +1,15 @@
 import { motion } from 'framer-motion'
 import { Languages } from 'lucide-react'
 import { useTranslation } from '@/utils/i18n'
+import { cn } from '@/lib/utils'
 
-export function LanguageSwitcher({ variant = 'default' }: { variant?: 'default' | 'compact' | 'ghost' }) {
+export function LanguageSwitcher({
+  variant = 'default',
+  className,
+}: {
+  variant?: 'default' | 'compact' | 'ghost'
+  className?: string
+}) {
   const { language, setLanguage } = useTranslation()
 
   if (variant === 'ghost') {
@@ -10,7 +17,10 @@ export function LanguageSwitcher({ variant = 'default' }: { variant?: 'default' 
       <button
         type="button"
         onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}
-        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        className={cn(
+          "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all cursor-pointer",
+          className
+        )}
         title={language === 'en' ? 'Switch to Thai / เปลี่ยนเป็นภาษาไทย' : 'Switch to English / เปลี่ยนเป็นภาษาอังกฤษ'}
       >
         <Languages className="h-4 w-4" />

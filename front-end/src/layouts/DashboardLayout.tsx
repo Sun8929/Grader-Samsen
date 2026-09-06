@@ -26,7 +26,6 @@ import {
   Swords,
   Check,
   ChevronLeft,
-  ChevronRight,
 } from 'lucide-react'
 import { BrandMark } from '@/components/BrandMark'
 import { cn } from '@/lib/utils'
@@ -70,6 +69,8 @@ const mobileTeacherNav = [
   { nameKey: 'nav.more', path: '/admin/analytics', icon: MoreHorizontal },
 ]
 
+const sidebarTransition = { type: 'spring' as const, stiffness: 280, damping: 28, mass: 0.85 }
+
 function NavLink({
   item,
   active,
@@ -85,25 +86,47 @@ function NavLink({
     <Link
       to={item.path}
       className={cn(
-        'relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200',
+        'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary',
         active
-          ? 'bg-accent text-accent-foreground'
-          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+          ? 'text-primary font-semibold'
+          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
       )}
       title={collapsed ? t(item.nameKey) : ''}
     >
-      {active && <span className="nav-active-indicator" aria-hidden />}
-      <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary')} />
-      {!collapsed && (
-        <motion.span
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -10 }}
-          className="truncate"
-        >
-          {t(item.nameKey)}
-        </motion.span>
+      {active && (
+        <motion.div
+          layoutId="sidebar-active-pill"
+          className="absolute inset-0 rounded-xl bg-primary/10 border border-primary/20 shadow-xs"
+          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+        />
       )}
+      {active && (
+        <motion.span
+          layoutId="sidebar-active-indicator"
+          className="nav-active-indicator"
+          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+          aria-hidden
+        />
+      )}
+      <Icon
+        className={cn(
+          'relative z-10 h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110',
+          active ? 'text-primary drop-shadow-[0_0_6px_var(--color-primary-glow)]' : 'text-muted-foreground group-hover:text-foreground',
+        )}
+      />
+      <AnimatePresence initial={false} mode="sync">
+        {!collapsed && (
+          <motion.span
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -8 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className="relative z-10 truncate whitespace-nowrap overflow-hidden origin-left"
+          >
+            {t(item.nameKey)}
+          </motion.span>
+        )}
+      </AnimatePresence>
     </Link>
   )
 }
@@ -114,7 +137,14 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
   const { user, authReady, isDark, toggleDark, logout, animationsEnabled } = useAppStore()
   const [showRankDialog, setShowRankDialog] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 1024)
   const { t, language } = useTranslation()
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
   const isStudent = user?.role === 'student'
   const navItems = admin
     ? teacherNav
@@ -174,45 +204,55 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
   return (
     <div className="min-h-dvh bg-background text-foreground relative overflow-hidden">
       {/* Floating glassmorphism glow blobs */}
-      <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary/15 blur-[120px] pointer-events-none z-0" />
-      <div className="fixed bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-[120px] pointer-events-none z-0" />
+      <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary/15 blur-[120px] pointer-events-none z-0 transition-colors duration-500" />
+      <div className="fixed bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-[120px] pointer-events-none z-0 transition-colors duration-500" />
 
       <motion.aside
         initial={false}
-        animate={{ width: isCollapsed ? 80 : 240 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-border bg-card shadow-sm lg:flex"
+        animate={{ width: isCollapsed ? 76 : 248 }}
+        transition={sidebarTransition}
+        className="fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-border bg-card/90 shadow-sm lg:flex backdrop-blur-xl"
       >
-        <div className="flex h-16 items-center border-b border-border px-4">
-          <Link to="/" className="flex items-center justify-center rounded-lg outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
-            <BrandMark />
+        <div className="flex h-16 items-center border-b border-border px-4 overflow-hidden">
+          <Link
+            to="/"
+            className="flex items-center justify-start rounded-lg outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring group"
+          >
+            <BrandMark hideText={isCollapsed} />
           </Link>
         </div>
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label={language === 'th' ? 'เมนูนำทางหลัก' : 'Main navigation'}>
+        <nav className="flex-1 space-y-1.5 overflow-y-auto p-3 scrollbar-none" aria-label={language === 'th' ? 'เมนูนำทางหลัก' : 'Main navigation'}>
           {navItems.map((item) => (
             <NavLink key={item.path} item={item} active={isActive(item)} collapsed={isCollapsed} />
           ))}
         </nav>
-        <div className="border-t border-border p-4">
-          <AnimatePresence>
+        <div className="border-t border-border p-3.5">
+          <AnimatePresence initial={false}>
             {!isCollapsed && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-3 truncate rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground overflow-hidden"
+                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                animate={{ opacity: 1, height: 'auto', marginBottom: 12 }}
+                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="truncate rounded-xl bg-muted/60 px-3 py-2 text-xs text-muted-foreground overflow-hidden border border-border/40"
               >
-                <span className="font-medium text-foreground">{user?.name ?? (language === 'th' ? 'ผู้เข้าชม' : 'Guest')}</span>
-                {user?.username && <span className="block truncate opacity-80">@{user.username}</span>}
+                <span className="font-semibold text-foreground block truncate">{user?.name ?? (language === 'th' ? 'ผู้เข้าชม' : 'Guest')}</span>
+                {user?.username && <span className="block truncate text-[11px] opacity-75">@{user.username}</span>}
               </motion.div>
             )}
           </AnimatePresence>
-          <div className="flex gap-1 items-center justify-center">
-            <LanguageSwitcher variant="ghost" />
-            <Button variant="ghost" size="icon" onClick={toggleDark} aria-label={language === 'th' ? 'สลับธีม' : 'Toggle theme'}>
+          <motion.div layout className={cn("gap-1 items-center justify-center", isCollapsed ? "grid grid-cols-2" : "flex")}>
+            <LanguageSwitcher variant="ghost" className="hover:scale-105 active:scale-95 transition-transform" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleDark}
+              aria-label={language === 'th' ? 'สลับธีม' : 'Toggle theme'}
+              className="hover:scale-105 active:scale-95 transition-transform"
+            >
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
-            <Button variant="ghost" size="icon" asChild>
+            <Button variant="ghost" size="icon" asChild className="hover:scale-105 active:scale-95 transition-transform">
               <Link to={`${base}/settings`} aria-label={t('nav.settings')}>
                 <Settings className="h-4 w-4" />
               </Link>
@@ -225,22 +265,34 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
                 navigate('/login')
               }}
               aria-label={t('nav.logout')}
+              className="hover:scale-105 active:scale-95 transition-transform text-muted-foreground hover:text-destructive"
             >
               <LogOut className="h-4 w-4" />
             </Button>
-          </div>
+          </motion.div>
         </div>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="m-2 rounded-full border border-border bg-background"
+          className="m-2.5 rounded-full border border-border/70 bg-card/80 hover:bg-card hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer self-center"
+          aria-label={isCollapsed ? (language === 'th' ? 'ขยายแถบข้าง' : 'Expand sidebar') : (language === 'th' ? 'ย่อแถบข้าง' : 'Collapse sidebar')}
         >
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          <motion.div
+            animate={{ rotate: isCollapsed ? 180 : 0 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </motion.div>
         </Button>
       </motion.aside>
 
-      <div className={cn("transition-all duration-300", isCollapsed ? "lg:pl-20" : "lg:pl-60")}>
+      <motion.div
+        initial={false}
+        animate={{ paddingLeft: isDesktop ? (isCollapsed ? 76 : 248) : 0 }}
+        transition={sidebarTransition}
+        className="min-h-dvh flex flex-col"
+      >
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/80 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-card/70 sm:px-8">
           <Link to="/" className="lg:hidden">
             <BrandMark />
@@ -295,7 +347,7 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
         >
           <Outlet />
         </motion.main>
-      </div>
+      </motion.div>
 
       <nav
         className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-card/95 backdrop-blur-md lg:hidden"

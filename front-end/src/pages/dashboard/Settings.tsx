@@ -311,6 +311,7 @@ export default function Settings() {
                 { id: 'amethyst', label: language === 'th' ? 'อเมทิสต์ (ม่วง)' : 'Amethyst (Purple)', color: 'bg-violet-500' },
                 { id: 'ruby', label: language === 'th' ? 'ทับทิม (ชมพู)' : 'Ruby (Pink)', color: 'bg-pink-500' },
                 { id: 'amber', label: language === 'th' ? 'อำพัน (ทอง)' : 'Amber (Gold)', color: 'bg-amber-500' },
+                { id: 'monochrome', label: language === 'th' ? 'ขาว-ดำ (โมโนโครม)' : 'Black & White (Monochrome)', color: 'bg-zinc-900 dark:bg-zinc-100 ring-1 ring-zinc-400/50' },
               ].map((theme) => (
                 <button
                   key={theme.id}

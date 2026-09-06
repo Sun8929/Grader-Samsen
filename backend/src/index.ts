@@ -35,7 +35,9 @@ const authLimiter = rateLimit({
 })
 
 // Apply rate limiters
-app.use('/api/', globalLimiter)
+app.use(globalLimiter)
+app.use('/auth/login', authLimiter)
+app.use('/auth/register', authLimiter)
 app.use('/api/auth/login', authLimiter)
 app.use('/api/auth/register', authLimiter)
 
@@ -64,14 +66,18 @@ app.use(
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
-app.get('/health', (_req, res) => {
+app.get(['/health', '/api/health'], (_req, res) => {
   res.json({ status: 'ok' })
 })
 
 app.use('/auth', authRouter)
+app.use('/api/auth', authRouter)
 app.use('/classrooms', classroomsRouter)
+app.use('/api/classrooms', classroomsRouter)
 app.use('/problems', problemsRouter)
+app.use('/api/problems', problemsRouter)
 app.use('/assignments', assignmentsRouter)
+app.use('/api/assignments', assignmentsRouter)
 
 // Fallback to JSON for 404
 app.use((req, res) => {

@@ -1,6 +1,8 @@
 import type { User, Classroom, Problem, Submission, Assignment } from '@/types'
 
-const API_URL = 'https://backend-six-henna-37.vercel.app'
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? 'http://localhost:3001' : 'https://backend-six-henna-37.vercel.app')
 
 export interface AuthSession {
   access_token: string
