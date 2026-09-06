@@ -215,6 +215,30 @@
   --theme-glow-2: rgba(161, 161, 170, 0.08);
 }
 
+/* Samsen Theme — Pink × Green */
+.theme-samsen {
+  --primary: #ec4899;
+  --primary-foreground: #ffffff;
+  --primary-glow: rgba(236, 72, 153, 0.18);
+  --accent-glow: rgba(16, 185, 129, 0.12);
+  --accent: rgba(236, 253, 245, 0.55);
+  --accent-foreground: #047857;
+  --secondary-accent: #10b981;
+  --theme-glow-1: rgba(236, 72, 153, 0.10);
+  --theme-glow-2: rgba(16, 185, 129, 0.10);
+}
+.dark.theme-samsen {
+  --primary: #f472b6;
+  --primary-foreground: #09090b;
+  --primary-glow: rgba(244, 114, 182, 0.28);
+  --accent-glow: rgba(52, 211, 153, 0.18);
+  --accent: rgba(20, 83, 45, 0.35);
+  --accent-foreground: #a7f3d0;
+  --secondary-accent: #34d399;
+  --theme-glow-1: rgba(244, 114, 182, 0.16);
+  --theme-glow-2: rgba(52, 211, 153, 0.14);
+}
+
 
 @layer base {
   html {

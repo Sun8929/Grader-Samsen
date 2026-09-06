@@ -13,12 +13,12 @@ interface AppState {
   submissions: Submission[]
   studentJoinedClassrooms: Record<string, string[]>
   studentSubmissions: Record<string, Submission[]>
-  themeColor: 'emerald' | 'sapphire' | 'amethyst' | 'ruby' | 'amber' | 'monochrome'
+  themeColor: 'emerald' | 'sapphire' | 'amethyst' | 'ruby' | 'amber' | 'monochrome' | 'samsen'
   animationsEnabled: boolean
   setUser: (user: User | null) => void
   toggleDark: (event?: any) => void
   setLanguage: (lang: 'en' | 'th') => void
-  setThemeColor: (color: 'emerald' | 'sapphire' | 'amethyst' | 'ruby' | 'amber' | 'monochrome') => void
+  setThemeColor: (color: 'emerald' | 'sapphire' | 'amethyst' | 'ruby' | 'amber' | 'monochrome' | 'samsen') => void
   toggleAnimations: () => void
   setDraftCode: (problemId: string, code: string) => void
   loginWithCredentials: (username: string, password: string) => Promise<User>
@@ -103,7 +103,7 @@ export const useAppStore = create<AppState>()(
         }),
       setThemeColor: (themeColor) => {
         const toggle = () => {
-          const colors = ['emerald', 'sapphire', 'amethyst', 'ruby', 'amber', 'monochrome']
+          const colors = ['emerald', 'sapphire', 'amethyst', 'ruby', 'amber', 'monochrome', 'samsen']
           colors.forEach((c) => {
             document.documentElement.classList.toggle(`theme-${c}`, c === themeColor)
           })
@@ -239,7 +239,7 @@ export const useAppStore = create<AppState>()(
           document.documentElement.classList.toggle('lang-th', defaultLang === 'th')
         }
         if (state?.themeColor) {
-          const colors = ['emerald', 'sapphire', 'amethyst', 'ruby', 'amber', 'monochrome']
+          const colors = ['emerald', 'sapphire', 'amethyst', 'ruby', 'amber', 'monochrome', 'samsen']
           colors.forEach((c) => {
             document.documentElement.classList.toggle(`theme-${c}`, c === state.themeColor)
           })

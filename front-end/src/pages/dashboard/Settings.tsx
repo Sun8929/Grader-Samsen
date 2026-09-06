@@ -306,12 +306,13 @@ export default function Settings() {
             </span>
             <div className="flex flex-wrap gap-2">
               {[
-                { id: 'emerald', label: language === 'th' ? 'มรกต (เขียว)' : 'Emerald (Green)', color: 'bg-emerald-500' },
-                { id: 'sapphire', label: language === 'th' ? 'ไพลิน (น้ำเงิน)' : 'Sapphire (Blue)', color: 'bg-blue-500' },
-                { id: 'amethyst', label: language === 'th' ? 'อเมทิสต์ (ม่วง)' : 'Amethyst (Purple)', color: 'bg-violet-500' },
-                { id: 'ruby', label: language === 'th' ? 'ทับทิม (ชมพู)' : 'Ruby (Pink)', color: 'bg-pink-500' },
-                { id: 'amber', label: language === 'th' ? 'อำพัน (ทอง)' : 'Amber (Gold)', color: 'bg-amber-500' },
-                { id: 'monochrome', label: language === 'th' ? 'ขาว-ดำ (โมโนโครม)' : 'Black & White (Monochrome)', color: 'bg-zinc-900 dark:bg-zinc-100 ring-1 ring-zinc-400/50' },
+                { id: 'emerald', label: language === 'th' ? 'มรกต (เขียว)' : 'Emerald (Green)', color: 'bg-emerald-500', color2: null },
+                { id: 'sapphire', label: language === 'th' ? 'ไพลิน (น้ำเงิน)' : 'Sapphire (Blue)', color: 'bg-blue-500', color2: null },
+                { id: 'amethyst', label: language === 'th' ? 'อเมทิสต์ (ม่วง)' : 'Amethyst (Purple)', color: 'bg-violet-500', color2: null },
+                { id: 'ruby', label: language === 'th' ? 'ทับทิม (ชมพู)' : 'Ruby (Pink)', color: 'bg-pink-500', color2: null },
+                { id: 'amber', label: language === 'th' ? 'อำพัน (ทอง)' : 'Amber (Gold)', color: 'bg-amber-500', color2: null },
+                { id: 'monochrome', label: language === 'th' ? 'ขาว-ดำ (โมโนโครม)' : 'Black & White (Monochrome)', color: 'bg-zinc-900 dark:bg-zinc-100 ring-1 ring-zinc-400/50', color2: null },
+                { id: 'samsen', label: language === 'th' ? 'สีสัมเสน (ชมพู × เขียว)' : 'Samsen (Pink × Green)', color: 'bg-pink-500', color2: 'bg-emerald-500' },
               ].map((theme) => (
                 <button
                   key={theme.id}
@@ -323,7 +324,14 @@ export default function Settings() {
                       : 'border-border bg-card/40 hover:bg-card/80 text-muted-foreground'
                   }`}
                 >
-                  <span className={`h-2.5 w-2.5 rounded-full ${theme.color} ring-1 ring-white/20`} />
+                  {theme.color2 ? (
+                    <span className="relative h-2.5 w-4 rounded-full overflow-hidden ring-1 ring-white/20 shrink-0 flex">
+                      <span className={`w-1/2 h-full ${theme.color}`} />
+                      <span className={`w-1/2 h-full ${theme.color2}`} />
+                    </span>
+                  ) : (
+                    <span className={`h-2.5 w-2.5 rounded-full ${theme.color} ring-1 ring-white/20`} />
+                  )}
                   {theme.label}
                 </button>
               ))}
