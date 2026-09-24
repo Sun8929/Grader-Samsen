@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
-import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Loader2, AlertCircle, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
 
 // Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString()
 
 interface PDFViewerProps {
   url: string
@@ -19,18 +22,43 @@ export default function PDFViewer({ url, title = 'Problem Statement' }: PDFViewe
   const [currentPage, setCurrentPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [pageWidth, setPageWidth] = useState(window.innerWidth)
+  const [pageWidth, setPageWidth] = useState(800)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handleResize = () => {
-      setPageWidth(Math.min(window.innerWidth - 40, 800))
+    const updatePageWidth = () => {
+      const width = containerRef.current?.clientWidth ?? window.innerWidth
+      setPageWidth(Math.max(280, Math.min(width - 32, 900)))
     }
 
-    window.addEventListener('resize', handleResize)
-    handleResize()
+    const observer = new ResizeObserver(updatePageWidth)
+    if (containerRef.current) observer.observe(containerRef.current)
+    window.addEventListener('resize', updatePageWidth)
+    updatePageWidth()
 
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', updatePageWidth)
+    }
+  }, [url])
+
+  useEffect(() => {
+    setCurrentPage(1)
+    setNumPages(null)
+    setLoading(true)
+    setError(null)
+  }, [url])
+
+  useEffect(() => {
+    if (!loading) return
+
+    const timeout = window.setTimeout(() => {
+      setLoading(false)
+      setError('The PDF did not finish loading within 15 seconds.')
+    }, 15000)
+
+    return () => window.clearTimeout(timeout)
+  }, [loading, url])
 
   const onDocumentLoadSuccess = ({ numPages: total }: { numPages: number }) => {
     setNumPages(total)
@@ -54,21 +82,29 @@ export default function PDFViewer({ url, title = 'Problem Statement' }: PDFViewe
   }
 
   return (
-    <Card className="overflow-hidden border border-border bg-card shadow-sm w-full pdf-card">
+    <Card className="flex h-full min-h-[500px] flex-col overflow-hidden border border-border bg-card shadow-sm w-full pdf-card">
       {/* Header */}
       <div className="border-b border-border px-4 py-3 bg-muted/30 flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-medium text-foreground">{title}</h3>
+        <div className="min-w-0">
+          <h3 className="truncate text-sm font-medium text-foreground">{title}</h3>
           {numPages && (
             <p className="text-xs text-muted-foreground mt-0.5">
               Page {currentPage} of {numPages}
             </p>
           )}
         </div>
+        <a
+          href={url}
+          download="problem-statement.pdf"
+          className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Download className="h-4 w-4" />
+          <span>Download PDF</span>
+        </a>
       </div>
 
       {/* PDF Container */}
-      <div className="relative w-full bg-background/50 min-h-[500px] flex items-center justify-center overflow-auto">
+      <div ref={containerRef} className="relative min-h-0 flex-1 w-full bg-background/50 flex items-center justify-center overflow-auto">
         {loading && (
           <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
             <Loader2 className="h-8 w-8 animate-spin" />
@@ -81,8 +117,11 @@ export default function PDFViewer({ url, title = 'Problem Statement' }: PDFViewe
             <AlertCircle className="h-8 w-8" />
             <span className="text-sm text-center">{error}</span>
             <p className="text-xs text-muted-foreground text-center">
-              Try refreshing or check if the PDF URL is valid.
+              The PDF could not be decoded. Use the direct link below to check whether the stored file itself is valid.
             </p>
+            <a href={url} target="_blank" rel="noreferrer" className="text-xs font-medium text-primary hover:underline">
+              Open PDF directly
+            </a>
           </div>
         )}
 
