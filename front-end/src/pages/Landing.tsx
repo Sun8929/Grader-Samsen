@@ -148,7 +148,7 @@ export default function Landing() {
             </a>
           </nav>
           <div className="flex items-center gap-1.5 sm:gap-3">
-            <LanguageSwitcher />
+            <LanguageSwitcher className="language-switcher-no-hover-scale" />
             <Button
               variant="ghost"
               size="icon"
