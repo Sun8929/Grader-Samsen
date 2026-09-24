@@ -367,6 +367,10 @@
     border-color: rgba(255, 255, 255, 0.85) !important;
   }
 
+  .language-switcher-no-hover-scale:hover {
+    transform: none !important;
+  }
+
   .dark .bg-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 35%, rgba(255, 255, 255, 0.02) 70%, rgba(255, 255, 255, 0.1) 100%), 
                 linear-gradient(135deg, rgba(15, 15, 22, 0.75) 0%, rgba(5, 5, 10, 0.55) 100%) !important;
