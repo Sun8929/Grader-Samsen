@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Play, Code, Loader2 } from 'lucide-react'
+import { Play, Code, Loader2, ExternalLink } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -33,6 +33,7 @@ export default function ProblemDetail() {
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<Partial<Submission> | null>(null)
   const [visibleTestcases, setVisibleTestcases] = useState<Array<{ input: string; output: string; isPublic: boolean }>>([])
+  const [pdfStatus, setPdfStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
 
   useEffect(() => {
     const loadTestcases = async () => {
@@ -105,11 +106,34 @@ export default function ProblemDetail() {
               </div>
             </div>
             {problem.pdfUrl ? (
-              <Card className="overflow-hidden border border-border bg-card shadow-sm h-[750px] pdf-card">
+              <Card className="overflow-hidden border border-border bg-card shadow-sm h-[clamp(500px,calc(100dvh-14rem),900px)] min-h-[500px] pdf-card">
+                <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2.5 bg-muted/30">
+                  <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+                    <span className="truncate">{currentLang === 'th' ? 'ตัวอย่างไฟล์ PDF' : 'PDF preview'}</span>
+                    <span aria-live="polite" className={pdfStatus === 'error' ? 'text-destructive' : 'text-muted-foreground'}>
+                      {pdfStatus === 'loading'
+                        ? (currentLang === 'th' ? 'กำลังโหลด...' : 'Loading...')
+                        : pdfStatus === 'error'
+                          ? (currentLang === 'th' ? 'โหลดไม่สำเร็จ' : 'Could not load')
+                          : (currentLang === 'th' ? 'โหลดแล้ว' : 'Loaded')}
+                    </span>
+                  </div>
+                  <a
+                    href={problem.pdfUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary hover:underline"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    {currentLang === 'th' ? 'เปิดไฟล์โดยตรง' : 'Open directly'}
+                  </a>
+                </div>
                 <iframe
                   src={problem.pdfUrl}
                   title="Problem Statement PDF"
-                  className="w-full h-full border-none"
+                  className="h-[calc(100%-42px)] w-full border-none bg-background"
+                  onLoad={() => setPdfStatus('loaded')}
+                  onError={() => setPdfStatus('error')}
                 />
               </Card>
             ) : (
