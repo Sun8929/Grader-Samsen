@@ -30,7 +30,7 @@ export function LanguageSwitcher({
   }
 
   return (
-    <div className="relative flex items-center gap-0.5 rounded-full border border-border bg-card p-1 shadow-sm">
+    <div className={cn("relative flex items-center gap-0.5 rounded-full border border-border bg-card p-1 shadow-sm", className)}>
       <button
         type="button"
         onClick={() => setLanguage('en')}
