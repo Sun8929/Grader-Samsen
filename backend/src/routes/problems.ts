@@ -2,8 +2,17 @@ import { Router } from 'express'
 import { createSupabaseClient, supabaseAdmin } from '../supabase.js'
 import { runCodeInSandbox, scanForPlagiarism } from '../utils/sandbox.js'
 import { cacheMiddleware, clearCache } from '../utils/cache.js'
+import { HttpError } from '../utils/learning.js'
 
 export const problemsRouter = Router()
+
+problemsRouter.use((req, res, next) => {
+  const hints = req.body?.hints
+  if (hints !== undefined && (!Array.isArray(hints) || hints.length > 10 || hints.some(h => typeof h !== 'string' || !h.trim() || h.length > 2000))) {
+    return res.status(400).json({ error: 'Provide up to 10 non-empty hints, each under 2000 characters.' })
+  }
+  next()
+})
 
 // 1. GET / - List all problems
 problemsRouter.get('/', cacheMiddleware(10), async (req, res) => {
@@ -45,6 +54,7 @@ problemsRouter.get('/', cacheMiddleware(10), async (req, res) => {
         difficulty: p.difficulty,
         timeLimit: p.time_limit,
         memoryLimit: p.memory_limit,
+        hints: p.hints || [],
         tags: p.tags || [],
         pdfUrl: p.pdf_url,
         solvedCount: solvedCountMap[p.id] || 0,
@@ -54,7 +64,7 @@ problemsRouter.get('/', cacheMiddleware(10), async (req, res) => {
 
     return res.json({ problems: problemsWithSolvedCount })
   } catch (err: any) {
-    return res.status(500).json({ error: err.message ?? 'Server error' })
+    return res.status(err instanceof HttpError ? err.status : 500).json({ error: err.message ?? 'Server error' })
   }
 })
 
@@ -81,13 +91,14 @@ problemsRouter.get('/:id', cacheMiddleware(10), async (req, res) => {
         difficulty: problem.difficulty,
         timeLimit: problem.time_limit,
         memoryLimit: problem.memory_limit,
+        hints: problem.hints || [],
         tags: problem.tags || [],
         pdfUrl: problem.pdf_url,
         xp: problem.xp || 0,
       }
     })
   } catch (err: any) {
-    return res.status(500).json({ error: err.message ?? 'Server error' })
+    return res.status(err instanceof HttpError ? err.status : 500).json({ error: err.message ?? 'Server error' })
   }
 })
 
@@ -118,12 +129,13 @@ problemsRouter.post('/', async (req, res) => {
     return res.status(403).json({ error: 'Access denied. Teachers only.' })
   }
 
-  const { title, statement, difficulty, timeLimit, memoryLimit, tags, pdfUrl, testcases, xp } = req.body as {
+  const { title, statement, difficulty, timeLimit, memoryLimit, tags, pdfUrl, testcases, xp, hints } = req.body as {
     title: string
     statement: string
     difficulty: 'easy' | 'medium' | 'hard'
     timeLimit: number
     memoryLimit: number
+    hints?: string[]
     tags?: string[]
     pdfUrl?: string
     testcases?: Array<{ input: string; output: string; isPublic?: boolean }>
@@ -150,6 +162,7 @@ problemsRouter.post('/', async (req, res) => {
         difficulty,
         time_limit: timeLimit || 1000,
         memory_limit: memoryLimit || 256,
+        hints: hints || [],
         tags: tags || [],
         pdf_url: pdfUrl || null,
         created_by: userData.user.id,
@@ -183,13 +196,14 @@ problemsRouter.post('/', async (req, res) => {
         difficulty: problem.difficulty,
         timeLimit: problem.time_limit,
         memoryLimit: problem.memory_limit,
+        hints: problem.hints || [],
         tags: problem.tags || [],
         pdfUrl: problem.pdf_url,
         xp: problem.xp || 0,
       }
     })
   } catch (err: any) {
-    return res.status(500).json({ error: err.message ?? 'Server error' })
+    return res.status(err instanceof HttpError ? err.status : 500).json({ error: err.message ?? 'Server error' })
   }
 })
 
@@ -319,11 +333,11 @@ problemsRouter.post('/:id/submit', async (req, res) => {
         submittedAt: submission.submitted_at,
         plagiarismScore: submission.plagiarism_score,
         isPlagiarized: submission.is_plagiarized,
-        testcaseResults: runResult.testcaseResults
+        testcaseResults: runResult.testcaseResults,
       }
     })
   } catch (err: any) {
-    return res.status(500).json({ error: err.message ?? 'Server error' })
+    return res.status(err instanceof HttpError ? err.status : 500).json({ error: err.message ?? 'Server error' })
   }
 })
 
@@ -390,7 +404,7 @@ problemsRouter.get('/submissions/all', async (req, res) => {
 
     return res.json({ submissions: mappedSubs })
   } catch (err: any) {
-    return res.status(500).json({ error: err.message ?? 'Server error' })
+    return res.status(err instanceof HttpError ? err.status : 500).json({ error: err.message ?? 'Server error' })
   }
 })
 
@@ -415,7 +429,7 @@ problemsRouter.get('/:id/testcases', async (req, res) => {
 
     return res.json({ testcases: mapped })
   } catch (err: any) {
-    return res.status(500).json({ error: err.message ?? 'Server error' })
+    return res.status(err instanceof HttpError ? err.status : 500).json({ error: err.message ?? 'Server error' })
   }
 })
 
@@ -459,7 +473,7 @@ problemsRouter.delete('/:id', async (req, res) => {
     clearCache('/api/problems')
     return res.json({ success: true })
   } catch (err: any) {
-    return res.status(500).json({ error: err.message ?? 'Server error' })
+    return res.status(err instanceof HttpError ? err.status : 500).json({ error: err.message ?? 'Server error' })
   }
 })
 
@@ -490,12 +504,13 @@ problemsRouter.put('/:id', async (req, res) => {
     return res.status(403).json({ error: 'Access denied. Teachers only.' })
   }
 
-  const { title, statement, difficulty, timeLimit, memoryLimit, tags, pdfUrl, testcases, xp } = req.body as {
+  const { title, statement, difficulty, timeLimit, memoryLimit, tags, pdfUrl, testcases, xp, hints } = req.body as {
     title: string
     statement: string
     difficulty: 'easy' | 'medium' | 'hard'
     timeLimit: number
     memoryLimit: number
+    hints?: string[]
     tags?: string[]
     pdfUrl?: string
     testcases?: Array<{ input: string; output: string; isPublic?: boolean }>
@@ -511,6 +526,7 @@ problemsRouter.put('/:id', async (req, res) => {
         difficulty,
         time_limit: timeLimit,
         memory_limit: memoryLimit,
+        hints: hints || [],
         tags: tags || [],
         pdf_url: pdfUrl || null,
         xp: xp !== undefined ? Number(xp) : 0,
@@ -546,12 +562,13 @@ problemsRouter.put('/:id', async (req, res) => {
         difficulty: problem.difficulty,
         timeLimit: problem.time_limit,
         memoryLimit: problem.memory_limit,
+        hints: problem.hints || [],
         tags: problem.tags || [],
         pdfUrl: problem.pdf_url,
         xp: problem.xp || 0,
       }
     })
   } catch (err: any) {
-    return res.status(500).json({ error: err.message ?? 'Server error' })
+    return res.status(err instanceof HttpError ? err.status : 500).json({ error: err.message ?? 'Server error' })
   }
 })

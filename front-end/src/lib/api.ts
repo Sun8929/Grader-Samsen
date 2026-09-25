@@ -319,6 +319,9 @@ export async function deleteAssignment(id: string): Promise<void> {
   })
 }
 
+export type ProgressProblem = Pick<Problem, 'id' | 'title' | 'difficulty' | 'tags'>
+export interface PersonalProgressData { problems: ProgressProblem[]; submissions: Submission[] }
+export function fetchPersonalProgress() { return request<PersonalProgressData>('/learning/progress') }
 export async function fetchClassroomSubmissions(classId: string): Promise<Submission[]> {
   const data = await request<{ submissions: Submission[] }>(`/classrooms/${classId}/submissions`)
   return data.submissions
@@ -348,4 +351,3 @@ export interface UserProfileDetails {
 export async function fetchUserProfile(userId: string): Promise<UserProfileDetails> {
   return request<UserProfileDetails>(`/auth/users/${userId}/profile`)
 }
-

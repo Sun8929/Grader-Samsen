@@ -8,24 +8,33 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import CodeEditor from '@/components/CodeEditor'
 import { VerdictBadge } from '@/components/VerdictBadge'
-import { LANGUAGES, mockProblems } from '@/lib/mock-data'
+import { LANGUAGES } from '@/lib/languages'
 
 import { useAppStore } from '@/store/useAppStore'
-import type { Submission, Verdict } from '@/types'
+import type { Problem, Submission, Verdict } from '@/types'
 import * as authApi from '@/lib/api'
 import DOMPurify from 'dompurify'
 import { ResizablePanes } from '@/components/ui/ResizablePanes'
 import { useTranslation } from '@/utils/i18n'
+import ProgressiveHints from '@/components/ProgressiveHints'
 
 export default function ProblemDetail() {
   const { id } = useParams<{ id: string }>()
-  const { draftCode, submitSolution, problems, animationsEnabled } = useAppStore()
-  const { language: currentLang } = useTranslation()
-  
-  const problem = (problems.length > 0 ? problems.find((p) => p.id === id) : null) || 
-                  mockProblems.find((p) => p.id === id) || 
-                  mockProblems[0]!
+  const { problems, fetchProblems } = useAppStore()
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    let active = true
+    void fetchProblems().finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [fetchProblems])
+  const problem = problems.find(p => p.id === id)
+  if (!problem) return <p className="p-6 text-muted-foreground">{loading ? 'Loading problem?' : 'Problem not found.'}</p>
+  return <ProblemWorkspace key={problem.id} problem={problem} />
+}
 
+function ProblemWorkspace({ problem }: { problem: Problem }) {
+  const { user, draftCode, submitSolution, animationsEnabled } = useAppStore()
+  const { language: currentLang } = useTranslation()
   const [language, setLanguage] = useState('cpp')
   const [code, setCode] = useState(
     () => draftCode[problem.id] ?? LANGUAGES.find((l) => l.id === 'cpp')!.template,
@@ -34,6 +43,7 @@ export default function ProblemDetail() {
   const [result, setResult] = useState<Partial<Submission> | null>(null)
   const [visibleTestcases, setVisibleTestcases] = useState<Array<{ input: string; output: string; isPublic: boolean }>>([])
   const [pdfStatus, setPdfStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
+
 
   useEffect(() => {
     const loadTestcases = async () => {
@@ -88,7 +98,12 @@ export default function ProblemDetail() {
         <span aria-hidden>/</span>
         <span className="text-foreground">{problem.title}</span>
       </nav>
+
       <ResizablePanes
+        key={user?.id || 'guest'}
+        storageKey={`grader-workspace:${user?.id || 'guest'}`}
+        allowFocus
+        defaultLeftWidth={problem.pdfUrl ? 60 : 50}
         left={
           <div className="space-y-4">
             <div>
@@ -106,8 +121,8 @@ export default function ProblemDetail() {
               </div>
             </div>
             {problem.pdfUrl ? (
-              <Card className="overflow-hidden border border-border bg-card shadow-sm h-[clamp(500px,calc(100dvh-14rem),900px)] min-h-[500px] pdf-card">
-                <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2.5 bg-muted/30">
+              <Card className="flex h-[80dvh] min-h-[560px] flex-col overflow-hidden border border-border bg-card shadow-sm pdf-card">
+                <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-2.5 bg-muted/30">
                   <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
                     <span className="truncate">{currentLang === 'th' ? 'ตัวอย่างไฟล์ PDF' : 'PDF preview'}</span>
                     <span aria-live="polite" className={pdfStatus === 'error' ? 'text-destructive' : 'text-muted-foreground'}>
@@ -131,7 +146,7 @@ export default function ProblemDetail() {
                 <iframe
                   src={problem.pdfUrl}
                   title="Problem Statement PDF"
-                  className="h-[calc(100%-42px)] w-full border-none bg-background"
+                  className="min-h-0 w-full flex-1 border-none bg-background"
                   onLoad={() => setPdfStatus('loaded')}
                   onError={() => setPdfStatus('error')}
                 />
@@ -141,23 +156,10 @@ export default function ProblemDetail() {
                 <Card>
                   <CardContent className="prose-statement p-6 text-sm" dangerouslySetInnerHTML={{ __html: statementHtml }} />
                 </Card>
-                <Card>
-                  <div className="border-b border-border px-6 py-4">
-                    <h3 className="text-sm font-medium">{currentLang === 'th' ? 'ตัวอย่างตัวอย่าง' : 'Examples'}</h3>
-                  </div>
-                  <div className="space-y-4 p-6 text-sm">
-                    <div>
-                      <p className="text-xs text-muted-foreground">{currentLang === 'th' ? 'ข้อมูลนำเข้า (Input)' : 'Input'}</p>
-                      <pre className="mt-1 rounded-md bg-muted p-2 font-mono text-sm">3 5</pre>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">{currentLang === 'th' ? 'ข้อมูลนำออก (Output)' : 'Output'}</p>
-                      <pre className="mt-1 rounded-md bg-muted p-2 font-mono text-sm">8</pre>
-                    </div>
-                  </div>
-                </Card>
+
               </>
             )}
+            <ProgressiveHints key={problem.id} hints={problem.hints || []} />
           </div>
         }
         right={
@@ -193,11 +195,11 @@ export default function ProblemDetail() {
               </span>
             </div>
 
-            <CodeEditor problemId={problem.id} language={language} value={code} onChange={setCode} />
+            <CodeEditor problemId={problem.id} language={language} value={code} onChange={setCode} height="65vh" />
 
             {/* Visible Testcases Panel */}
             {visibleTestcases.length > 0 && (
-              <Card className="mt-4 border border-border bg-card shadow-sm">
+              <Card className="testcase-card mt-4 border border-border bg-card shadow-sm">
                 <div className="border-b border-border px-6 py-4">
                   <h3 className="text-sm font-semibold flex items-center gap-2">
                     <Code className="h-4 w-4 text-primary" /> {currentLang === 'th' ? 'กรณีทดสอบที่แสดงได้' : 'Visible Testcases'}
@@ -236,7 +238,7 @@ export default function ProblemDetail() {
                 transition={animationsEnabled ? { type: "spring", stiffness: 100, damping: 15 } : { duration: 0 }}
                 className="mt-4"
               >
-                <Card>
+                <Card className="testcase-card">
                   <CardContent className="space-y-3 p-4">
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-muted-foreground">{currentLang === 'th' ? 'ผลตรวจ' : 'Verdict'}</span>

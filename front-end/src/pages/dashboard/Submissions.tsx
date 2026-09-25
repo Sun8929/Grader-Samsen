@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { PageHeader } from '@/components/PageHeader'
 import { VerdictBadge } from '@/components/VerdictBadge'
-import { mockProblems, mockSubmissions } from '@/lib/mock-data'
 import { useAppStore } from '@/store/useAppStore'
 import { useTranslation } from '@/utils/i18n'
 
@@ -44,11 +43,11 @@ export default function Submissions() {
   // Get submissions list
   let submissionsList = submissions.length > 0 ? submissions : []
   if (submissionsList.length === 0) {
-    submissionsList = isStudent ? (studentSubmissions[userId] ?? []) : mockSubmissions
+    submissionsList = isStudent ? (studentSubmissions[userId] ?? []) : []
   }
 
-  // Combine database problems and mock problems for title resolution
-  const allProblems = [...problems, ...mockProblems]
+  // Resolve titles from loaded problems
+  const allProblems = problems
 
   return (
     <div className="space-y-8">

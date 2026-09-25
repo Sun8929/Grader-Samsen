@@ -33,6 +33,7 @@ export default function ProblemManager() {
   const [memoryLimit, setMemoryLimit] = useState(256)
   const [statement, setStatement] = useState('')
   const [tagsInput, setTagsInput] = useState('')
+  const [hints, setHints] = useState<string[]>([])
   const [pdfUrl, setPdfUrl] = useState('')
   const [pdfFileName, setPdfFileName] = useState('')
   const [testcases, setTestcases] = useState<InlineTestcase[]>([
@@ -58,6 +59,7 @@ export default function ProblemManager() {
     setMemoryLimit(256)
     setStatement('')
     setTagsInput('')
+    setHints([])
     setPdfUrl('')
     setPdfFileName('')
     setTestcases([{ input: '', output: '', isPublic: true }])
@@ -74,6 +76,7 @@ export default function ProblemManager() {
     setMemoryLimit(p.memoryLimit || 256)
     setStatement(p.statement || '')
     setTagsInput(p.tags ? p.tags.join(', ') : '')
+    setHints(p.hints || [])
     setPdfUrl(p.pdfUrl || '')
     setPdfFileName(p.pdfUrl ? 'statement.pdf' : '')
     
@@ -170,6 +173,7 @@ export default function ProblemManager() {
         timeLimit,
         memoryLimit,
         tags,
+        hints: hints.map(h => h.trim()).filter(Boolean),
         pdfUrl: pdfUrl || undefined,
         xp: Number(xp) || 0,
         testcases: testcases.map((tc) => ({
@@ -428,6 +432,20 @@ export default function ProblemManager() {
               </div>
 
               {/* Testcases Builder */}
+              <section className="space-y-3 rounded-xl border border-border p-4">
+                <h3 className="text-sm font-semibold">{language === 'th' ? 'คำใบ้ทีละขั้น' : 'Progressive hints'}</h3>
+                <p className="text-xs text-muted-foreground">{language === 'th' ? 'เริ่มจากคำแนะนำเล็กน้อย แล้วจึงอธิบายแนวทาง นักเรียนจะเปิดทีละคำใบ้' : 'Start with a small clue, then explain the approach. Students reveal one hint at a time.'}</p>
+                {hints.map((hint, index) => (
+                  <div key={index} className="flex gap-2">
+                    <label className="flex-1 space-y-1 text-sm">
+                      {language === 'th' ? 'คำใบ้' : 'Hint'} {index + 1}
+                      <textarea value={hint} maxLength={2000} rows={3} className="w-full rounded-md border border-input bg-background p-3" onChange={e => setHints(hints.map((h, i) => i === index ? e.target.value : h))} />
+                    </label>
+                    <Button type="button" variant="ghost" aria-label={`Remove hint ${index + 1}`} onClick={() => setHints(hints.filter((_, i) => i !== index))}><X className="h-4 w-4" /></Button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" disabled={hints.length >= 10} onClick={() => setHints([...hints, ''])}>{language === 'th' ? 'เพิ่มคำใบ้' : 'Add hint'}</Button>
+              </section>
               <div className="space-y-3 border-t border-border pt-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold flex items-center gap-2">

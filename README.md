@@ -10,7 +10,7 @@
 
 Grader Samsen provides a school-focused workspace for publishing programming problems, running student submissions against test cases, organizing classrooms, and reviewing coding activity. Students can join classrooms, solve problems, submit code, and review verdicts. Teachers and administrators can manage users, classrooms, problems, assignments, and classroom results.
 
-The application is currently a working codebase with some dashboard and administration views still backed by mock data. See [Known limitations](#known-limitations) before deploying it for real users.
+See [Known limitations](#known-limitations) for deployment requirements.
 
 ## Features
 
@@ -20,6 +20,7 @@ The application is currently a working codebase with some dashboard and administ
 - In-browser code editing, sample runs, submissions, verdicts, runtime, memory, and per-test-case results.
 - Code execution through the OnlineCompiler.io API for configured compiler runtimes.
 - Assignments linked to classrooms and one or more problems.
+- Progressive problem hints and personal progress by difficulty and topic.
 - Teacher/admin views for users, classroom members, submissions, and submission analytics.
 - XP, tiers, leaderboard data, profile settings, avatar data, dark mode, theme selection, and English/Thai UI translations.
 - Supabase Auth and database migrations with row-level security policies.
@@ -118,7 +119,7 @@ Do not commit either `.env` file. The repository ignores them; only the `.env.ex
 
 1. Register as a student or sign in.
 2. Join a classroom with its seven-character classroom code.
-3. Open a problem, write code in the editor, and run a sample or submit the solution.
+3. Open a problem, write code in the editor, and review public test cases and submit the solution.
 4. Review the overall verdict and individual test-case results in the problem workspace.
 5. Review submissions, classroom assignments, profile information, and leaderboard data from the dashboard.
 
@@ -168,7 +169,7 @@ flowchart TD
 │   ├── src/
 │   │   ├── components/       # Shared UI, editor, viewer, and layout components
 │   │   ├── pages/            # Landing, auth, dashboard, and admin routes
-│   │   ├── lib/              # API client, types, mock data, and utilities
+│   │   ├── lib/              # API client, language templates, and utilities
 │   │   ├── services/         # Frontend services
 │   │   └── store/            # Zustand application state
 │   ├── public/               # Static public assets
@@ -222,7 +223,6 @@ The backend includes a Vercel function entry point and `backend/vercel.json`, bu
 
 ## Known limitations
 
-- Several frontend views still use mock data or local state, including parts of the home dashboard, submission display, and the standalone admin testcase manager.
 - The OnlineCompiler.io API is an external runtime dependency; code execution fails when `ONLINE_COMPILER_API_KEY` is missing or invalid.
 - The repository does not contain automated tests, Docker files, or a deployment guide for the backend.
 - No `LICENSE` file is present in the repository. Review and add the intended license before redistributing the project.

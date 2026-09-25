@@ -343,7 +343,9 @@ export default function DashboardLayout({ admin = false }: { admin?: boolean }) 
           initial={animationsEnabled ? { opacity: 0, y: 6 } : {}}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: animationsEnabled ? 0.2 : 0, ease: [0.16, 1, 0.3, 1] }}
-          className="mx-auto max-w-7xl p-6 pb-24 sm:p-8 lg:pb-10 lg:p-10"
+          className={/^\/app\/problems\/[^/]+\/?$/.test(location.pathname)
+            ? 'mx-auto w-full max-w-none p-4 pb-24 sm:p-6 lg:pb-10'
+            : 'mx-auto max-w-7xl p-6 pb-24 sm:p-8 lg:pb-10 lg:p-10'}
         >
           <Outlet />
         </motion.main>

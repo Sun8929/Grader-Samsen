@@ -35,6 +35,7 @@ export interface Problem {
   memoryLimit: number
   createdBy: string
   tags?: string[]
+  hints?: string[]
   solvedCount?: number
   classId?: string
   pdfUrl?: string
@@ -105,7 +106,10 @@ export interface LeaderboardEntry {
 export interface Assignment {
   id: string
   title: string
-  className: string
+  className?: string
+  classId?: string
+  description?: string
+  createdAt?: string
   dueAt: string
   problemIds: string[]
 }

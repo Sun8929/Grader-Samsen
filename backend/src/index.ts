@@ -8,6 +8,7 @@ import { authRouter } from './routes/auth.js'
 import { classroomsRouter } from './routes/classrooms.js'
 import { problemsRouter } from './routes/problems.js'
 import { assignmentsRouter } from './routes/assignments.js'
+import { learningRouter } from './routes/learning.js'
 
 const { port, frontendUrl } = loadEnv()
 
@@ -78,6 +79,8 @@ app.use('/problems', problemsRouter)
 app.use('/api/problems', problemsRouter)
 app.use('/assignments', assignmentsRouter)
 app.use('/api/assignments', assignmentsRouter)
+app.use('/learning', learningRouter)
+app.use('/api/learning', learningRouter)
 
 // Fallback to JSON for 404
 app.use((req, res) => {

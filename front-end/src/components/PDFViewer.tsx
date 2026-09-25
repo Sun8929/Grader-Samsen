@@ -82,7 +82,7 @@ export default function PDFViewer({ url, title = 'Problem Statement' }: PDFViewe
   }
 
   return (
-    <Card className="flex h-full min-h-[500px] flex-col overflow-hidden border border-border bg-card shadow-sm w-full pdf-card">
+    <Card className="flex h-full min-h-125 flex-col overflow-hidden border border-border bg-card shadow-sm w-full pdf-card">
       {/* Header */}
       <div className="border-b border-border px-4 py-3 bg-muted/30 flex items-center justify-between">
         <div className="min-w-0">

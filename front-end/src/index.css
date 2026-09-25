@@ -356,7 +356,7 @@
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
-  .bg-card:hover {
+  .bg-card:not(.no-card-hover):hover {
     background-position: 100% 100% !important;
     transform: translateY(-3px) scale(1.008);
     box-shadow: 
@@ -367,7 +367,8 @@
     border-color: rgba(255, 255, 255, 0.85) !important;
   }
 
-  .language-switcher-no-hover-scale:hover {
+  .language-switcher-no-hover-scale:hover,
+  .testcase-card:hover {
     transform: none !important;
   }
 
@@ -381,7 +382,7 @@
       inset 0 -1px 2px 0 rgba(0, 0, 0, 0.2) !important;
   }
 
-  .dark .bg-card:hover {
+  .dark .bg-card:not(.no-card-hover):hover {
     box-shadow: 
       0 24px 48px -15px rgba(0, 0, 0, 0.65),
       inset 0 1px 2px 0 rgba(255, 255, 255, 0.25),
