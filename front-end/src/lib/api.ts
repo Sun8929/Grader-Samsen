@@ -322,6 +322,16 @@ export async function deleteAssignment(id: string): Promise<void> {
 export type ProgressProblem = Pick<Problem, 'id' | 'title' | 'difficulty' | 'tags'>
 export interface PersonalProgressData { problems: ProgressProblem[]; submissions: Submission[] }
 export function fetchPersonalProgress() { return request<PersonalProgressData>('/learning/progress') }
+
+export interface Feedback { id: string; body: string; authorName: string; createdAt: string }
+export async function fetchFeedback(id: string) {
+  return (await request<{ feedback: Feedback[] }>(`/learning/submissions/${id}/feedback`)).feedback
+}
+export async function postFeedback(id: string, body: string) {
+  return (await request<{ feedback: Feedback }>(`/learning/submissions/${id}/feedback`, {
+    method: 'POST', body: JSON.stringify({ body }),
+  })).feedback
+}
 export async function fetchClassroomSubmissions(classId: string): Promise<Submission[]> {
   const data = await request<{ submissions: Submission[] }>(`/classrooms/${classId}/submissions`)
   return data.submissions

@@ -15,6 +15,7 @@ import * as api from '@/lib/api'
 import type { Classroom } from '@/types'
 import { getRankFromXp } from '@/lib/ranks'
 import { cn } from '@/lib/utils'
+import { mockProblems } from '@/lib/mock-data'
 import { Link } from 'react-router-dom'
 import { useTranslation } from '@/utils/i18n'
 
@@ -46,7 +47,7 @@ export default function Classes() {
   // Local assignments list state
   const [assignments, setAssignments] = useState<any[]>([])
 
-  const allProblems = dbProblems
+  const allProblems = [...dbProblems, ...mockProblems]
 
   useEffect(() => {
     fetchProblems()
@@ -780,7 +781,7 @@ export default function Classes() {
             {/* Join / Create Column */}
             <div className="lg:col-span-1 space-y-6">
               {isStudent ? (
-                <Card className="no-card-hover border border-border/80 shadow-sm bg-card">
+                <Card className="border border-border/80 shadow-sm bg-card">
                   <CardHeader>
                     <CardTitle className="text-base font-semibold">
                       {language === 'th' ? 'เข้าร่วมห้องเรียน' : 'Join Class'}
@@ -794,7 +795,7 @@ export default function Classes() {
                       placeholder="e.g. ALGO7X2"
                       value={joinCode}
                       onChange={(e: ChangeEvent<HTMLInputElement>) => setJoinCode(e.target.value.toUpperCase())}
-                      className="no-card-hover font-mono uppercase text-center tracking-widest text-lg h-11"
+                      className="font-mono uppercase text-center tracking-widest text-lg h-11"
                       maxLength={7}
                       disabled={joining}
                     />

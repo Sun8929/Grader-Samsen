@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { PageHeader } from '@/components/PageHeader'
 import { VerdictBadge } from '@/components/VerdictBadge'
+import { mockProblems, mockSubmissions } from '@/lib/mock-data'
 import { useAppStore } from '@/store/useAppStore'
 import { useTranslation } from '@/utils/i18n'
+import SubmissionFeedback from '@/components/SubmissionFeedback'
 
 const tableVariants = {
   hidden: { opacity: 0 },
@@ -43,11 +45,11 @@ export default function Submissions() {
   // Get submissions list
   let submissionsList = submissions.length > 0 ? submissions : []
   if (submissionsList.length === 0) {
-    submissionsList = isStudent ? (studentSubmissions[userId] ?? []) : []
+    submissionsList = isStudent ? (studentSubmissions[userId] ?? []) : mockSubmissions
   }
 
-  // Resolve titles from loaded problems
-  const allProblems = problems
+  // Combine database problems and mock problems for title resolution
+  const allProblems = [...problems, ...mockProblems]
 
   return (
     <div className="space-y-8">
@@ -67,6 +69,7 @@ export default function Submissions() {
                 <th className="px-6 py-3">{language === 'th' ? 'ผลการตรวจ' : 'Verdict'}</th>
                 <th className="px-6 py-3">{language === 'th' ? 'เวลา' : 'Time'}</th>
                 <th className="px-6 py-3">{language === 'th' ? 'คะแนน' : 'Score'}</th>
+                <th className="px-6 py-3">{language === 'th' ? 'ความคิดเห็น' : 'Feedback'}</th>
               </tr>
             </thead>
             <motion.tbody 
@@ -77,7 +80,7 @@ export default function Submissions() {
             >
               {submissionsList.length === 0 ? (
                 <motion.tr variants={rowVariants}>
-                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                     {language === 'th'
                       ? 'ยังไม่มีประวัติการส่งคำตอบ ลองทำโจทย์เพื่อดูประวัติที่นี่'
                       : 'No submissions yet. Solve some coding problems to see your history.'}
@@ -113,6 +116,7 @@ export default function Submissions() {
                         {s.runtime != null ? `${s.runtime}ms` : '—'}
                       </td>
                       <td className="px-6 py-4 font-semibold tabular-nums">{s.score ?? '—'}</td>
+                      <td className="px-6 py-4"><SubmissionFeedback key={s.id} submissionId={s.id} canWrite={user?.role === 'admin'} /></td>
                     </motion.tr>
                   )
                 })

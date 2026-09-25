@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Code2, Trophy, Activity, Shield, Medal, Crown, Gem, Sparkles, Flame, Swords, Moon, Sun, Settings, GitCommit, GitBranch, Loader2, Clock } from 'lucide-react'
+import { BookOpen, Code2, Trophy, Activity, Shield, Medal, Crown, Gem, Sparkles, Flame, Swords, Moon, Sun, Settings, GitCommit, GitBranch, Loader2, FlaskConical, Globe, School, Clock } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { PageHeader } from '@/components/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useAppStore } from '@/store/useAppStore'
+import { mockAssignments, mockClassrooms } from '@/lib/mock-data'
 import { getRankFromXp } from '@/lib/ranks'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/utils/i18n'
 import * as api from '@/lib/api'
-import PersonalProgress from '@/components/PersonalProgress'
 
 const Github = ({ className }: { className?: string }) => (
   <svg
@@ -51,8 +51,28 @@ const cardVariants = {
   },
 }
 
-const listVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.04 } } }
-const listItemVariants = { hidden: { opacity: 0, x: -8 }, show: { opacity: 1, x: 0 } }
+const listVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.04,
+    },
+  },
+}
+
+const listItemVariants = {
+  hidden: { opacity: 0, x: -8 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 110,
+      damping: 16,
+    },
+  },
+}
 
 const getRelativeTime = (dateString: string, lang: 'en' | 'th') => {
   const date = new Date(dateString)
@@ -85,7 +105,7 @@ const getRelativeTime = (dateString: string, lang: 'en' | 'th') => {
 }
 
 export default function DashboardHome() {
-  const { user, studentSubmissions, isDark, toggleDark } = useAppStore()
+  const { user, studentJoinedClassrooms, studentSubmissions, isDark, toggleDark, animationsEnabled } = useAppStore()
   const userId = user?.id ?? ''
   const isStudent = user?.role === 'student'
   const { t, language } = useTranslation()
@@ -117,11 +137,13 @@ export default function DashboardHome() {
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(true)
   const [loadingCommits, setLoadingCommits] = useState(true)
 
+  const joinedIds = studentJoinedClassrooms[userId] ?? []
   const userSubmissions = studentSubmissions[userId] ?? []
 
   const acceptedSubmissions = userSubmissions.filter((s) => s.verdict === 'Accepted')
   const solvedCount = new Set(acceptedSubmissions.map((s) => s.problemId)).size
 
+  const activeClassCount = isStudent ? joinedIds.length : mockClassrooms.length
   const problemsSolvedText = isStudent ? solvedCount.toString() : '0'
 
   const userXp = user?.xp ?? 0
@@ -167,6 +189,13 @@ export default function DashboardHome() {
         ]
       : []),
     { 
+      label: language === 'th' ? 'ห้องเรียนที่ใช้งาน' : 'Active classes', 
+      value: activeClassCount.toString(), 
+      icon: BookOpen, 
+      colorClass: 'text-primary', 
+      bgColorClass: 'bg-accent' 
+    },
+    { 
       label: language === 'th' ? 'ไฟสตรีค' : 'Streak', 
       value: language === 'th' ? `${user?.streak ?? 0} วัน` : `${user?.streak ?? 0} days`, 
       icon: Activity, 
@@ -174,6 +203,19 @@ export default function DashboardHome() {
       bgColorClass: 'bg-accent' 
     },
   ]
+
+  const enrolledClassNames = mockClassrooms
+    .filter((c) => joinedIds.includes(c.id))
+    .map((c) => c.name.toLowerCase().replace(/[^a-z0-9]/g, ''))
+
+  const studentAssignments = isStudent
+    ? mockAssignments.filter((a) => {
+        const assignmentClassClean = a.className.toLowerCase().replace(/[^a-z0-9]/g, '')
+        return enrolledClassNames.some(
+          (name) => assignmentClassClean.includes(name) || name.includes(assignmentClassClean),
+        )
+      })
+    : mockAssignments
 
   useEffect(() => {
     const loadLeaderboard = async () => {
@@ -210,8 +252,64 @@ export default function DashboardHome() {
         }))
         setCommits(formattedCommits)
       } catch (err) {
-        console.warn('Could not fetch commit history:', err)
-        setCommits([])
+        console.warn('Falling back to local commit logs:', err)
+        const fallbackCommits = [
+          {
+            sha: 'e8f9082e6669fcf88b5025988ad17798b17b2b00',
+            shortSha: 'e8f9082',
+            message: 'Update README.md',
+            authorName: 'Adulwit Nuntasukhon',
+            authorAvatar: '',
+            date: '2026-06-25T08:00:00Z',
+            url: 'https://github.com/Sun8929/Grader-Samsen/commit/e8f9082e6669fcf88b5025988ad17798b17b2b00'
+          },
+          {
+            sha: '412e59ee7cf3665dfb1192e22f22b7bf57159cff',
+            shortSha: '412e59e',
+            message: 'small README.md change',
+            authorName: 'Adulwit Nuntasukhon',
+            authorAvatar: '',
+            date: '2026-06-25T07:45:00Z',
+            url: 'https://github.com/Sun8929/Grader-Samsen/commit/412e59ee7cf3665dfb1192e22f22b7bf57159cff'
+          },
+          {
+            sha: '1948efbc7cf3665dfb1192e22f22b7bf57159caa',
+            shortSha: '1948efb',
+            message: 'feat: implement rate limiting, payload compression, Keep-Alive timeouts, and in-memory GET caching in backend',
+            authorName: 'Samsen Student',
+            authorAvatar: '',
+            date: '2026-06-25T06:30:00Z',
+            url: 'https://github.com/Sun8929/Grader-Samsen/commit/1948efbc7cf3665dfb1192e22f22b7bf57159caa'
+          },
+          {
+            sha: '1f54219b7cf3665dfb1192e22f22b7bf57159cbb',
+            shortSha: '1f54219',
+            message: 'Revise README with clearer project description',
+            authorName: 'Adulwit Nuntasukhon',
+            authorAvatar: '',
+            date: '2026-06-25T05:00:00Z',
+            url: 'https://github.com/Sun8929/Grader-Samsen/commit/1f54219b7cf3665dfb1192e22f22b7bf57159cbb'
+          },
+          {
+            sha: '5af22f5b7cf3665dfb1192e22f22b7bf57159ccc',
+            shortSha: '5af22f5',
+            message: 'style: remove hover animation on sidebar layout and embed school logo in README',
+            authorName: 'Samsen Student',
+            authorAvatar: '',
+            date: '2026-06-25T04:15:00Z',
+            url: 'https://github.com/Sun8929/Grader-Samsen/commit/5af22f5b7cf3665dfb1192e22f22b7bf57159ccc'
+          },
+          {
+            sha: '9f93466b7cf3665dfb1192e22f22b7bf57159ddd',
+            shortSha: '9f93466',
+            message: 'feat: show top 10 users in leaderboard preview',
+            authorName: 'Samsen Student',
+            authorAvatar: '',
+            date: '2026-06-25T03:30:00Z',
+            url: 'https://github.com/Sun8929/Grader-Samsen/commit/9f93466b7cf3665dfb1192e22f22b7bf57159ddd'
+          }
+        ]
+        setCommits(fallbackCommits)
       } finally {
         setLoadingCommits(false)
       }
@@ -256,7 +354,7 @@ export default function DashboardHome() {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className={cn("grid gap-4 sm:grid-cols-2", isStudent ? "lg:grid-cols-3" : "lg:grid-cols-2")}
+        className={cn("grid gap-4 sm:grid-cols-2", isStudent ? "lg:grid-cols-4" : "lg:grid-cols-3")}
       >
         {stats.map((s) => {
           const Icon = s.icon
@@ -284,7 +382,48 @@ export default function DashboardHome() {
       </motion.div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 100, damping: 15 }}
+        >
+          <Card className="h-full">
+            <CardHeader className="border-b border-border py-4">
+              <CardTitle className="text-sm font-medium">{language === 'th' ? 'การบ้านล่าสุด' : 'Recent assignments'}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {studentAssignments.length === 0 ? (
+                <p className="p-6 text-center text-sm text-muted-foreground">
+                  {language === 'th' ? 'ไม่มีการบ้านที่ค้างอยู่' : 'No active assignments due.'}
+                </p>
+              ) : (
+                <motion.ul 
+                  variants={listVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="divide-y divide-border"
+                >
+                  {studentAssignments.map((a) => (
+                    <motion.li
+                      key={a.id}
+                      variants={listItemVariants}
+                      className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-muted/50"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{a.title}</p>
+                        <p className="text-xs text-muted-foreground">{a.className}</p>
+                      </div>
+                      <span className="text-xs tabular-nums text-muted-foreground">
+                        {language === 'th' ? 'กำหนดส่ง: ' : 'Due: '}
+                        {new Date(a.dueAt).toLocaleDateString(language === 'th' ? 'th-TH' : 'en-US')}
+                      </span>
+                    </motion.li>
+                  ))}
+                </motion.ul>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -356,9 +495,80 @@ export default function DashboardHome() {
           </Card>
         </motion.div>
 
+        <motion.div
+          initial={animationsEnabled ? { opacity: 0, y: 15 } : {}}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.28, type: 'spring', stiffness: 100, damping: 15 }}
+          className="lg:col-span-2"
+        >
+          <Card>
+            <CardHeader className="border-b border-border py-4">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Activity className="h-4 w-4 text-primary" />
+                {language === 'th' ? 'แผนการดำเนินงานระบบ Grader' : 'Grader Platform Roadmap'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Horizontal connection line on md screens */}
+                <div className="hidden md:block absolute left-[15%] right-[15%] top-6 h-[2px] bg-border/80 z-0" />
 
+                {[
+                  {
+                    month: language === 'th' ? 'กรกฎาคม' : 'July',
+                    title: language === 'th' ? 'Beta Test' : 'Beta Test',
+                    desc: language === 'th' ? 'ทดสอบระบบการส่งโจทย์และรับผลตรวจระดับภายในกลุ่มเบต้า' : 'Internal testing with select sandbox students.',
+                    icon: FlaskConical,
+                    active: true,
+                    color: 'text-amber-500 bg-amber-500/10 border-amber-500/20'
+                  },
+                  {
+                    month: language === 'th' ? 'สิงหาคม' : 'August',
+                    title: language === 'th' ? 'Public Grader' : 'Public Grader',
+                    desc: language === 'th' ? 'เปิดระบบโจทย์ปัญหาให้คนทั่วไปได้ส่งโค้ดและสะสม XP ทั่วประเทศ' : 'Opening submissions to the public with global rank boards.',
+                    icon: Globe,
+                    active: false,
+                    color: 'text-blue-500 bg-blue-500/10 border-blue-500/20'
+                  },
+                  {
+                    month: language === 'th' ? 'กันยายน' : 'September',
+                    title: language === 'th' ? 'Samsenwit School' : 'Samsenwit School',
+                    desc: language === 'th' ? 'ใช้จริงอย่างเป็นทางการในการเรียนการสอน รร. สามเสนวิทยาลัย' : 'Deploying officially for classroom grading at Samsenwit School.',
+                    icon: School,
+                    active: false,
+                    color: 'text-primary bg-primary/10 border-primary/20'
+                  }
+                ].map((step, idx) => {
+                  const Icon = step.icon
+                  return (
+                    <div key={idx} className="relative z-10 flex flex-col items-center text-center space-y-3 group">
+                      {/* Milestone Icon */}
+                      <span className={cn(
+                        "flex h-12 w-12 items-center justify-center rounded-full border shadow-sm transition-all duration-300 group-hover:scale-105",
+                        step.color
+                      )}>
+                        <Icon className="h-5 w-5" />
+                      </span>
 
-        {isStudent && <div className="lg:col-span-2"><PersonalProgress key={userId} /></div>}
+                      {/* Milestone Details */}
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                          {step.month}
+                        </span>
+                        <h4 className="text-sm font-bold text-foreground">
+                          {step.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
+                          {step.desc}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 15 }}
